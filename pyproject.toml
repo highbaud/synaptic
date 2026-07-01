@@ -1,0 +1,36 @@
+[project]
+name = "synaptic"
+version = "0.1.0"
+description = "Local-first Obsidian intelligence and second brain system."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+dependencies = [
+    "pyyaml>=6.0",
+    "requests>=2.31",
+    "click>=8.1",
+    "rich>=13.0",
+    "watchdog>=4.0",
+]
+
+[project.optional-dependencies]
+# Vector search backends are optional in the prototype; the core works without them.
+vector = ["sqlite-vec>=0.1.0"]
+dev = ["pytest>=8.0", "ruff>=0.5"]
+mcp = ["mcp>=1.0"]
+
+[project.scripts]
+synaptic = "synaptic.cli:main"
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["synaptic*"]
+
+[tool.setuptools.package-data]
+"synaptic.templates" = ["*.md"]
+
+[tool.ruff]
+line-length = 100

@@ -1,0 +1,56 @@
+#!/usr/bin/env bash
+# pre-push security gate.
+#
+# 1. Runs the mechanical scanner (scripts/security-gate.sh). CRITICAL/HIGH = blocked.
+# 2. Prompts you to confirm the manual checklist items a scanner can't verify.
+#
+# Bypass for emergencies:  git push --no-verify
+# Skip the manual prompt in automation:  SECURITY_GATE_ASSUME_YES=1 git push
+
+set -u
+ROOT="$(git rev-parse --show-toplevel 2>/dev/null)" || exit 0
+SCANNER="$ROOT/scripts/security-gate.sh"
+
+if [ -f "$SCANNER" ]; then
+  bash "$SCANNER" gate
+  rc=$?
+  if [ "$rc" -eq 2 ]; then
+    exit 1   # blocking findings — abort the push
+  fi
+else
+  echo "security-gate: scanner not found at $SCANNER (skipping mechanical scan)" >&2
+fi
+
+# --- manual checklist confirmation -----------------------------------------
+if [ -t 1 ]; then C=$'\033[36m'; B=$'\033[1m'; D=$'\033[2m'; X=$'\033[0m'; else C=""; B=""; D=""; X=""; fi
+
+cat <<EOF
+
+${B}${C}Manual checklist${X} ${D}(the scanner can't verify these — confirm yourself)${X}
+  1. Privacy policy live + you know which region/services hold user data
+  2. RLS policies actually tested as a DIFFERENT user (not just "enabled")
+  3. Server-side validation on every form that writes to the DB
+  4. Auth failure cases tested: wrong password x5, reset for fake email,
+     verify-link clicked twice, signup with an existing email
+  5. Rate limits + hard spend caps + alerts on every paid-API endpoint
+  6. CAPTCHA on public forms; CORS locked to your real domains
+  7. Built-in scanner (Cursor / Claude Code / Lovable) shows zero warnings
+EOF
+
+if [ "${SECURITY_GATE_ASSUME_YES:-0}" = "1" ]; then
+  echo "${D}SECURITY_GATE_ASSUME_YES=1 — skipping manual prompt.${X}"
+  exit 0
+fi
+
+# Prompt on the controlling terminal (stdin is consumed by git's ref list).
+if [ -e /dev/tty ]; then
+  printf "\n${B}All manual items verified? Push anyway? [y/N] ${X}"
+  read -r answer < /dev/tty
+  case "$answer" in
+    y|Y|yes|YES) echo "${D}Confirmed — pushing.${X}"; exit 0 ;;
+    *) echo "Push aborted. Re-run when the checklist is done (or: git push --no-verify)."; exit 1 ;;
+  esac
+else
+  echo "${D}No interactive terminal — can't prompt. Review the items above before relying on this push.${X}"
+  exit 0
+fi

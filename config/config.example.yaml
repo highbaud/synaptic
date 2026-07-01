@@ -1,0 +1,89 @@
+# Synaptic configuration. Copy to config/config.yaml and edit.
+# config.yaml is gitignored; this example file is tracked.
+
+vault:
+  # Absolute or relative path to your Obsidian vault.
+  # The bundled example vault lets you try Synaptic with zero setup.
+  path: ./examples/vault
+
+storage:
+  # SQLite file holding canonical entities, tag suggestions, and evidence.
+  db_path: ./.synaptic/synaptic.db
+
+privacy:
+  # Hard local-only mode: refuse to call any external (non-Ollama) provider.
+  # Nothing from your vault leaves the machine.
+  local_only: true
+  # Privacy levels allowed to appear in briefs and recommendations.
+  # personal_sensitive, nsfw, and excluded are never used unless added here.
+  brief_allowed_levels:
+    - public
+    - professional
+  # Default level assigned to a note with no explicit `privacy:` frontmatter.
+  default_level: professional
+
+llm:
+  default_provider: ollama
+
+routing:
+  tagging: ollama
+  embeddings: ollama
+  briefs: ollama
+  privacy_filter: local      # always runs locally regardless of provider
+  strategic_queries: ollama
+  # Hybrid example: route briefs to a paid model for higher quality.
+  #   briefs: anthropic
+  #   strategic_queries: openai
+
+providers:
+  ollama:
+    type: local
+    base_url: http://localhost:11434
+    # Best daily-use models by RAM:
+    #   8 GB  → llama3.2:3b  (fast, good enough for most vault tasks)
+    #   16 GB → llama3.1:8b  (noticeably smarter at reasoning)
+    #   24 GB → llama3.1:8b or gemma2:9b  (long-doc analysis)
+    chat_model: llama3.2:3b
+    embedding_model: nomic-embed-text
+
+  # LM Studio — OpenAI-compatible local server (visual model browser).
+  # Start the server in LM Studio's Developer tab, then uncomment and use.
+  # lm_studio:
+  #   type: openai_compatible
+  #   base_url: http://localhost:1234/v1
+  #   api_key_env: LM_STUDIO_API_KEY   # can be any non-empty string
+  #   chat_model: lmstudio-community/Meta-Llama-3.1-8B-Instruct-GGUF
+
+  openai:
+    type: openai
+    api_key_env: OPENAI_API_KEY
+    chat_model: gpt-4.1-mini
+    embedding_model: text-embedding-3-small
+
+  anthropic:
+    type: anthropic
+    api_key_env: ANTHROPIC_API_KEY
+    chat_model: claude-sonnet-4
+
+  xai:
+    type: openai_compatible
+    api_key_env: XAI_API_KEY
+    base_url: https://api.x.ai/v1
+    chat_model: grok-3
+
+  deepseek:
+    type: openai_compatible
+    api_key_env: DEEPSEEK_API_KEY
+    base_url: https://api.deepseek.com
+    chat_model: deepseek-chat
+
+  openrouter:
+    type: openai_compatible
+    api_key_env: OPENROUTER_API_KEY
+    base_url: https://openrouter.ai/api/v1
+    chat_model: openai/gpt-4.1-mini
+
+tagging:
+  # Suggestions below this confidence are dropped entirely.
+  min_confidence: 0.55
+  # A topic note may override this via its own `confidence_threshold`.

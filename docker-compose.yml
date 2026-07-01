@@ -1,0 +1,21 @@
+# Optional local service. Synaptic does not require this; it runs against an
+# Obsidian vault alone. Bring up Ollama when you want a local LLM.
+#
+#   docker compose up -d ollama
+#
+# After Ollama is up, pull the default models:
+#   docker exec -it synaptic-ollama ollama pull llama3.2:3b
+#   docker exec -it synaptic-ollama ollama pull nomic-embed-text
+
+services:
+  ollama:
+    image: ollama/ollama:latest
+    container_name: synaptic-ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    restart: unless-stopped
+
+volumes:
+  ollama_data:

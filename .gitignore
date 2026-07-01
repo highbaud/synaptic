@@ -1,0 +1,12 @@
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+*.egg
+.env
+config/config.yaml
+*.db
+*.sqlite
+.DS_Store
+Thumbs.db
