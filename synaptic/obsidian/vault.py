@@ -73,8 +73,17 @@ class Vault:
 
     def markdown_files(self) -> Iterator[Path]:
         for p in self.root.rglob("*.md"):
+            rel_parts = p.relative_to(self.root).parts
             # Skip Obsidian internals and hidden dirs.
-            if any(part.startswith(".") for part in p.relative_to(self.root).parts):
+            if any(part.startswith(".") for part in rel_parts):
+                continue
+            # Skip vault infrastructure that is not a real note. Note templates
+            # are full of {{placeholders}} and CLAUDE.md is the context file;
+            # indexing either pollutes search and query results, which is most
+            # visible in a fresh vault where they would be most of the hits.
+            if "templates" in rel_parts[:-1]:
+                continue
+            if p.name == "CLAUDE.md":
                 continue
             yield p
 
