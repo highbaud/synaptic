@@ -1,5 +1,8 @@
 <p align="center">
-  <img src="assets/synaptic-logo.png" alt="Synaptic" width="520">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="assets/synaptic-logo.png">
+    <img src="assets/synaptic-logo-light.png" alt="Synaptic" width="520">
+  </picture>
 </p>
 
 # Synaptic
